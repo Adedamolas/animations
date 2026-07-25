@@ -1,0 +1,167 @@
+@import "tailwindcss";
+
+/* ────────────────────────────────────────────────────────────────────────
+   Design DNA — semantic tokens (light + dark). Components speak in roles,
+   never raw colors. Re-skin by swapping --primary and the neutral hue.
+   ──────────────────────────────────────────────────────────────────────── */
+:root,
+.force-light {
+  /* surfaces */
+  --background: 240 7% 97%;
+  --card: 0 0% 100%;
+  --surface-2: 240 5% 96%;
+  --surface-3: 240 5% 92%;
+
+  /* text — three tiers, never more */
+  --foreground: 240 6% 10%;
+  --text-secondary: 240 4% 45%;
+  --text-tertiary: 240 5% 66%;
+
+  /* brand — indigo */
+  --primary: 245 88% 67%;
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 245 75% 61%;
+  --primary-soft: 246 90% 96%;
+  --primary-border: 246 87% 91%;
+
+  /* status */
+  --success: 142 71% 45%;
+  --destructive: 0 84% 60%;
+  --warning-soft: 41 83% 91%;
+  --warning-text: 35 92% 33%;
+
+  /* hairlines */
+  --border: 240 5% 91%;
+  --border-strong: 240 4% 86%;
+  --ring: 245 88% 67%;
+
+  /* dark-menu signature (dark in BOTH themes) */
+  --menu-bg: 240 7% 12%;
+  --menu-hover: 240 6% 18%;
+  --menu-text: 240 5% 96%;
+  --menu-muted: 240 4% 58%;
+  --menu-border: 240 5% 21%;
+
+  --radius: 10px;
+
+  /* motion tokens — the only easings/durations we use */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-press: 140ms;
+  --dur-fast: 150ms;
+  --dur-base: 200ms;
+  --dur-panel: 240ms;
+  --dur-modal: 280ms;
+}
+
+.dark {
+  --background: 240 7% 6%;
+  --card: 240 7% 8%;
+  --surface-2: 240 6% 13%;
+  --surface-3: 240 6% 17%;
+  --foreground: 240 5% 96%;
+  --text-secondary: 240 5% 65%;
+  --text-tertiary: 240 4% 40%;
+  --primary-soft: 248 28% 21%;
+  --primary-border: 247 27% 30%;
+  --border: 240 6% 16%;
+  --border-strong: 240 6% 21%;
+  --warning-soft: 37 31% 18%;
+  --warning-text: 45 93% 48%;
+}
+
+/* ────────────────────────────────────────────────────────────────────────
+   Tailwind v4 theme wiring — tokens become utilities (bg-card, text-text-
+   secondary, ease-out, rounded-lg …). No tailwind.config.ts in v4.
+   ──────────────────────────────────────────────────────────────────────── */
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-card: hsl(var(--card));
+  --color-surface-2: hsl(var(--surface-2));
+  --color-surface-3: hsl(var(--surface-3));
+
+  --color-foreground: hsl(var(--foreground));
+  --color-text-secondary: hsl(var(--text-secondary));
+  --color-text-tertiary: hsl(var(--text-tertiary));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-hover: hsl(var(--primary-hover));
+  --color-primary-soft: hsl(var(--primary-soft));
+  --color-primary-border: hsl(var(--primary-border));
+
+  --color-success: hsl(var(--success));
+  --color-destructive: hsl(var(--destructive));
+
+  --color-border: hsl(var(--border));
+  --color-border-strong: hsl(var(--border-strong));
+  --color-ring: hsl(var(--ring));
+
+  --color-menu: hsl(var(--menu-bg));
+  --color-menu-hover: hsl(var(--menu-hover));
+  --color-menu-text: hsl(var(--menu-text));
+  --color-menu-muted: hsl(var(--menu-muted));
+  --color-menu-border: hsl(var(--menu-border));
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+}
+
+/* ── Lenis smooth scroll (global foundation) ─────────────────────────────── */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-feature-settings: "cv11", "ss01";
+}
+
+::selection {
+  background: hsl(var(--primary) / 0.2);
+}
+
+/* Carousel caption swap — occasional, so it earns a soft blur-in (landing
+   surface, exempt from the 300ms chrome ceiling). Keyed remount replays it. */
+@keyframes caption-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+.caption-in {
+  animation: caption-in var(--dur-panel) var(--ease-out);
+}
+
+/* Reduced motion: keep opacity, drop movement. Lenis is disabled in JS too. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
