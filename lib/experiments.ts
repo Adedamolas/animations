@@ -20,6 +20,7 @@ export const experiments: Experiment[] = [
   },
   {
     slug: "liquid-signup",
+    
     title: "Liquid signup",
     blurb:
       "A pill that morphs into a close button while the signup card inflates from it like a balloon — overshooting before it settles.",
@@ -31,6 +32,13 @@ export const experiments: Experiment[] = [
     blurb:
       "On one swipe the full-bleed hero collapses into a tiny squircle that lands inline in the copy, as the paragraph bounces in around it.",
     date: "2026-07-24",
+  },
+  {
+    slug: "testimonials",
+    title: "Testimonials",
+    blurb:
+      "A row of avatars where the active one expands to reveal its name and title, while the quote slides out one side and cascades back in line by line.",
+    date: "2026-07-25",
   },
 ];
 
