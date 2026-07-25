@@ -7,6 +7,10 @@ import { useSpring } from "@/lib/use-spring";
 const CREAM = "#faf6e8";
 const HERO_BG =
   "radial-gradient(120% 90% at 60% 42%, #2ba28b 0%, #14675a 33%, #0a3a33 68%, #06201d 100%)";
+/* One warm accent — gold — against the emerald. Ties into the cream/tan copy
+   instead of the old orange that fought the green. Deep-emerald ink on top. */
+const ACCENT = "#e2a648";
+const ACCENT_INK = "#06201d";
 const NAV_LIGHT = [250, 246, 232]; // on the dark hero
 const NAV_DARK = [26, 20, 15]; // on the cream content
 const SQUIRCLE = 60; // px — the size the hero lands at
@@ -253,7 +257,7 @@ export function HeroMorph({ initialPhase = 0 }: { initialPhase?: 0 | 1 }) {
         <div className="flex items-center gap-2 text-lg font-semibold tracking-tight">
           <span
             className="grid size-6 place-items-center rounded-md text-[13px]"
-            style={{ background: "#ff6a1f", color: "#fff" }}
+            style={{ background: ACCENT, color: ACCENT_INK }}
           >
             ✦
           </span>
@@ -262,8 +266,8 @@ export function HeroMorph({ initialPhase = 0 }: { initialPhase?: 0 | 1 }) {
         <div className="flex items-center gap-3 text-[13px] font-medium">
           <span className="hidden sm:inline">Get the app</span>
           <span
-            className="rounded-full px-4 py-2 text-white shadow-sm"
-            style={{ background: "#ff6a1f" }}
+            className="rounded-full px-4 py-2 font-semibold shadow-sm"
+            style={{ background: ACCENT, color: ACCENT_INK }}
           >
             Download
           </span>
