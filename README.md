@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Animations
 
-## Getting Started
+A playground for pouring out motion ideas — physics-driven, fluid web
+animations by [Adedamola](https://adedamola.work), following a house design &
+motion system. Live at **[animations.adedamola.work](https://animations.adedamola.work)**.
 
-First, run the development server:
+Every experiment leans on the same foundations: [Lenis](https://lenis.darkroom.engineering)
+for smooth scroll and a dependency-free spring integrator (`lib/use-spring.ts`)
+that paints straight to the DOM — so nothing re-renders React mid-animation.
+
+## Experiments
+
+| | |
+|---|---|
+| **Inverted carousel** | A concave coverflow of squircle portraits that overshoots and rocks back into place on every step. Infinite loop via wrapped offsets. |
+| **Liquid signup** | A pill that morphs into a close button while the signup card inflates from it like a balloon — through a droplet stage — and login/signup toggle bounces the height. |
+| **Hero morph** | On one swipe a full-bleed hero collapses into a tiny squircle that lands inline in the copy, as the paragraph cascades in word by word. |
+
+Add an entry to `lib/experiments.ts` and it shows up on the home gallery
+automatically.
+
+## Stack
+
+- **Next.js 16** (App Router, Turbopack) + **React 19**
+- **Tailwind v4** — tokens live in `@theme` inside `app/globals.css`; there is no `tailwind.config`
+- **Lenis** for smooth scroll (disabled under `prefers-reduced-motion`)
+- Hand-rolled fixed-timestep spring — no motion library
+
+## Develop
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) (or the next free port).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build   # production build
+npm run lint    # eslint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Motion notes
 
-## Learn More
+- Animation is driven imperatively: a spring's `onChange` calls a single `paint()`
+  that writes `transform` / geometry to refs. React state only flips discrete
+  phases.
+- Some pages accept a `?p=1` (or `defaultOpen`) query/prop to render an end
+  state server-side — handy for previews and to avoid a hydration flash.
+- Effects flatten `preserve-3d`, so 3D card work avoids `overflow`, `opacity`,
+  `filter`, `mask`, `clip-path`, and `box-shadow` on rotated layers.
 
-To learn more about Next.js, take a look at the following resources:
+## Deploy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Hosted on Vercel. The social card (`public/og.png`) is a snapshot of the hero
+experiment; OG/Twitter metadata and `metadataBase` live in `app/layout.tsx`.
