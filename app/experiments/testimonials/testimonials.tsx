@@ -188,6 +188,16 @@ export function Testimonials({ initialActive = 0 }: { initialActive?: number }) 
         spring.jump(0);
         spring.set(1);
       }
+
+      // Keep the freshly-expanded avatar in view when the row has to scroll
+      // (mobile). Wait a frame so the panel has started widening.
+      requestAnimationFrame(() => {
+        avatarRefs.current[i]?.scrollIntoView({
+          behavior: reduced ? "auto" : "smooth",
+          inline: "center",
+          block: "nearest",
+        });
+      });
     },
     [spring],
   );
@@ -217,7 +227,7 @@ export function Testimonials({ initialActive = 0 }: { initialActive?: number }) 
   const out = outgoing ? PEOPLE[outgoing.index] : null;
 
   return (
-    <section className="force-light grid min-h-screen place-items-center bg-background px-6">
+    <section className="force-light flex min-h-screen items-center justify-center bg-background px-6">
       <a
         href="/"
         className="absolute left-6 top-6 text-[11px] font-medium text-text-tertiary transition-colors hover:text-text-secondary sm:left-10 sm:top-10"
@@ -225,16 +235,18 @@ export function Testimonials({ initialActive = 0 }: { initialActive?: number }) 
         ← Playground
       </a>
 
-      <div className="w-full max-w-[680px] rounded-xl border border-border bg-card p-8 shadow-sm sm:p-10">
+      <div className="w-full min-w-0 max-w-[680px] rounded-xl border border-border bg-card p-6 shadow-sm sm:p-10">
         <div className="text-[13px] font-medium text-text-tertiary">{BRAND}</div>
 
-        {/* Quote area — two absolute layers so old can leave as new arrives. */}
-        <div className="relative mt-6 min-h-[176px] sm:min-h-[196px]">
+        {/* Quote area — the current quote sits in flow (so the card height
+            adapts to however the copy wraps on any screen); the outgoing one
+            overlays it and slides away. */}
+        <div className="relative mt-6">
           {out && (
             <blockquote
               ref={outRef}
               aria-hidden
-              className="pointer-events-none absolute inset-0 z-0 text-[21px] font-medium leading-snug tracking-tight text-foreground sm:text-[26px]"
+              className="pointer-events-none absolute inset-0 z-0 text-[19px] font-medium leading-snug tracking-tight text-foreground sm:text-[26px]"
             >
               {out.lines.map((line, i) => (
                 <span key={i} className="block">
@@ -243,7 +255,7 @@ export function Testimonials({ initialActive = 0 }: { initialActive?: number }) 
               ))}
             </blockquote>
           )}
-          <blockquote className="absolute inset-0 z-10 text-[21px] font-medium leading-snug tracking-tight text-foreground sm:text-[26px]">
+          <blockquote className="relative z-10 text-[19px] font-medium leading-snug tracking-tight text-foreground sm:text-[26px]">
             {current.lines.map((line, i) => (
               <span
                 key={i}
@@ -258,9 +270,11 @@ export function Testimonials({ initialActive = 0 }: { initialActive?: number }) 
           </blockquote>
         </div>
 
-        {/* Avatar row — click to expand name + title. */}
-        <div className="mt-9 flex items-center">
-          {PEOPLE.map((p, i) => (
+        {/* Avatar row — click to expand name + title. Scrolls horizontally
+            when it can't all fit (mobile); the active one is kept in view. */}
+        <div className="mt-8 -m-1 min-w-0 overflow-x-auto p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex w-max items-center">
+            {PEOPLE.map((p, i) => (
             <div key={p.name} className="flex items-center">
               <button
                 ref={(el) => {
@@ -305,7 +319,8 @@ export function Testimonials({ initialActive = 0 }: { initialActive?: number }) 
                 </div>
               </div>
             </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>

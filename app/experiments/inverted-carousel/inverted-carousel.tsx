@@ -98,8 +98,9 @@ export function InvertedCarousel() {
         continue;
       }
       card.style.visibility = "visible";
-      card.style.pointerEvents =
-        Math.abs(wrappedOffset(i, position)) < 0.5 ? "none" : "auto";
+      // Every visible card is tappable — the front one advances, the rest
+      // travel to themselves (see goToCard).
+      card.style.pointerEvents = "auto";
       card.style.transform = g.transform;
       card.style.zIndex = String(g.zIndex);
       const scrim = scrimRefs.current[i];
@@ -127,15 +128,34 @@ export function InvertedCarousel() {
     [active, animateTo],
   );
 
-  // Clicking a side card: travel to that person via the shortest way round.
+  // Tapping a card: a side card travels to that person via the shortest way
+  // round; the front card just advances to the next one.
   const goToCard = useCallback(
     (i: number) => {
       const cur = ((active % N) + N) % N;
       let delta = (((i - cur) % N) + N) % N; // 0..N-1
       if (delta > N / 2) delta -= N; // take the shorter direction
-      if (delta !== 0) animateTo(active + delta);
+      animateTo(active + (delta !== 0 ? delta : 1));
     },
     [active, animateTo],
+  );
+
+  // Touch swipe (mobile): a horizontal drag steps the ring; swipe left → next.
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, []);
+  const onTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      const s = touchStart.current;
+      touchStart.current = null;
+      if (!s) return;
+      const dx = e.changedTouches[0].clientX - s.x;
+      const dy = e.changedTouches[0].clientY - s.y;
+      // Horizontal intent only, past a comfortable threshold.
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) step(dx < 0 ? 1 : -1);
+    },
+    [step],
   );
 
   // Initial paint of the ring on mount.
@@ -167,7 +187,9 @@ export function InvertedCarousel() {
     <div className="flex w-full flex-col items-center">
       {/* Stage — perspective wrapper holds the 3D scene */}
       <div
-        className="relative h-[440px] w-full origin-center scale-[0.7] select-none sm:scale-90 lg:scale-100"
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        className="relative h-[440px] w-full origin-center scale-[0.58] touch-pan-y select-none sm:scale-90 lg:scale-100"
         style={{ perspective: "1500px" }}
       >
         <div

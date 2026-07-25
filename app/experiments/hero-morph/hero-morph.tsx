@@ -277,7 +277,10 @@ export function HeroMorph({ initialPhase = 0 }: { initialPhase?: 0 | 1 }) {
       {/* Hero foreground — lines exit upward, staggered */}
       <div ref={heroRef} className="absolute inset-0 z-20">
         <div className="absolute bottom-16 left-6 max-w-[92%] sm:left-10">
-          <h1 className="text-[4.4rem] font-bold leading-[0.9] tracking-tight text-white sm:text-[8.1rem]">
+          <h1
+            className="font-bold leading-[0.9] tracking-tight text-white"
+            style={{ fontSize: "clamp(2.4rem, 10.5vw, 8.1rem)" }}
+          >
             <span
               ref={(el) => {
                 heroItemsRef.current[0] = el;

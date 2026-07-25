@@ -30,7 +30,7 @@ export default async function Page({
       </header>
 
       {/* The stage — the widget lives at the top right, like real site chrome */}
-      <div className="relative mx-auto mt-6 w-full max-w-[1100px] flex-1 px-8">
+      <div className="relative mx-auto mt-6 w-full max-w-[1100px] flex-1 px-4 sm:px-8">
         <div className="relative h-[560px] overflow-hidden rounded-lg border border-dashed border-border-strong">
           <LiquidSignup
             defaultOpen={open === "1"}

@@ -28,7 +28,7 @@ export default function Page() {
 
       <footer className="mx-auto w-full max-w-[1100px] px-8 pb-10 text-center">
         <p className="text-xs text-text-tertiary">
-          Click the arrows, a side card, or use ← / → keys.
+          Swipe, tap a card, use the arrows, or the ← / → keys.
         </p>
       </footer>
     </main>

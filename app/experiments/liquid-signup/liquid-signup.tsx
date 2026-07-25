@@ -193,6 +193,23 @@ export function LiquidSignup({
     paint();
   }, [paint]);
 
+  // Fit-to-stage: the widget's geometry is authored at PANEL_W; on a narrow
+  // stage we scale the whole thing down from its top-right anchor so it never
+  // overflows. Applied imperatively (no re-render) so it can't fight paint.
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    const fit = () => {
+      const pw = el.parentElement?.clientWidth ?? window.innerWidth;
+      const scale = Math.min(1, (pw - 36) / PANEL_W);
+      el.style.transformOrigin = "top right";
+      el.style.transform = `scale(${scale})`;
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, []);
+
   // Esc closes.
   useEffect(() => {
     if (!open) return;
