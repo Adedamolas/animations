@@ -40,6 +40,13 @@ export const experiments: Experiment[] = [
       "A row of avatars where the active one expands to reveal its name and title, while the quote slides out one side and cascades back in line by line.",
     date: "2026-07-25",
   },
+  {
+    slug: "hidden-balance",
+    title: "Hidden balance",
+    blurb:
+      "Hide your balance and a shimmer sweeps across, shattering the number into shards that scatter — then reassembles them when you reveal it again.",
+    date: "2026-07-26",
+  },
 ];
 
 export function getExperiment(slug: string): Experiment | undefined {
