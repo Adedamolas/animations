@@ -83,7 +83,7 @@ export function PaperCards({ previewPos }: { previewPos?: number }) {
     const w = Math.min(vw * 0.6, 900);
     const h = w * 0.64;
 
-    const P0x = vw * 0.26, P0y = vh * 0.18;
+    const P0x = vw * 0.4, P0y = vh * 0.12; // top, 10% left of centre
     const P1x = vw * 0.52, P1y = vh * 0.5;
     const P2x = vw * 0.45, P2y = vh * 1.32;
 
@@ -105,8 +105,8 @@ export function PaperCards({ previewPos }: { previewPos?: number }) {
 
       const cx = bez(t, P0x, P1x, P2x);
       const cy = bez(t, P0y, P1y, P2y);
-      // grow to full by centre, then hold (never shrink on the way out)
-      const s = t < FOCAL ? mix(0.75, 1, smooth(0, FOCAL, t)) : 1;
+      // enter SMALL and grow to full by centre, then hold (never shrink out)
+      const s = t < FOCAL ? mix(0.32, 1, smooth(0, FOCAL, t)) : 1;
 
       const c = coeff[i];
       const rx = (a1 * c.ax + a2 * c.bx) * WAVE_AMP;
@@ -116,7 +116,7 @@ export function PaperCards({ previewPos }: { previewPos?: number }) {
       el.style.transform =
         `translate3d(${cx - w / 2}px, ${cy - h / 2}px, 0) ` +
         `rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${s})`;
-      el.style.opacity = String(smooth(-0.08, 0.1, t));
+      el.style.opacity = String(smooth(-0.06, 0.03, t));
       el.style.zIndex = String(Math.round((2 - Math.abs(t - FOCAL)) * 60));
 
       const near = Math.abs(t - FOCAL);
