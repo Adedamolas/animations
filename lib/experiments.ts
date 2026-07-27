@@ -90,6 +90,13 @@ export const experiments: Experiment[] = [
       "A folder whose front sheet tips open while the files inside fan out and name themselves, staggered — with a springy back-out pop.",
     date: "2026-07-27",
   },
+  {
+    slug: "glass-carousel",
+    title: "Glass carousel",
+    blurb:
+      "An infinite scroll-driven portfolio row rendered in WebGL through a liquid-glass lens shader — chromatic dispersion, a shimmer ring, and a click-to-focus mode. Adapted from Yousuf Soomro's MIT project.",
+    date: "2026-07-27",
+  },
 ];
 
 export function getExperiment(slug: string): Experiment | undefined {
