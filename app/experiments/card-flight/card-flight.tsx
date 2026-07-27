@@ -22,7 +22,6 @@ const IDLE_R = 1.5;
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const seg = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
-const easeIn = (t: number) => t * t * t;
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 const easeInOut = (t: number) =>
   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -184,11 +183,13 @@ export function CardFlight({ previewP }: { previewP?: number }) {
       const bottomY = vh / 2 - (CARD_H * s) / 2 - BOTTOM_MARGIN;
       const topY = -vh * 0.62 - (CARD_H * s) / 2;
 
-      // Vertical: fall in (accelerate), touch the bottom, rise to centre.
+      // Vertical: fall in, kiss the bottom, rise to centre. easeInOut on both
+      // legs means velocity eases to ~0 at the bottom — a soft touch, not a
+      // hard bounce.
       let baseY: number;
       if (p <= c.enter) baseY = topY;
-      else if (p < c.tb) baseY = mix(topY, bottomY, easeIn(seg(p, c.enter, c.tb)));
-      else if (p < c.tc) baseY = mix(bottomY, 0, easeOut(seg(p, c.tb, c.tc)));
+      else if (p < c.tb) baseY = mix(topY, bottomY, easeInOut(seg(p, c.enter, c.tb)));
+      else if (p < c.tc) baseY = mix(bottomY, 0, easeInOut(seg(p, c.tb, c.tc)));
       else baseY = 0;
 
       const stackX = c.off.x * s;
@@ -223,17 +224,22 @@ export function CardFlight({ previewP }: { previewP?: number }) {
       !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     let raf = 0;
+    let smooth = -1; // low-pass on scroll progress → cards glide, not step
     const loop = (now: number) => {
-      let p = previewP ?? 0;
-      if (previewP === undefined) {
-        const track = trackRef.current;
-        if (track) {
-          const rect = track.getBoundingClientRect();
-          const dist = track.offsetHeight - window.innerHeight;
-          p = clamp01(-rect.top / Math.max(1, dist));
-        }
+      if (previewP !== undefined) {
+        paint(previewP, now);
+        raf = requestAnimationFrame(loop);
+        return;
       }
-      paint(p, now);
+      let target = 0;
+      const track = trackRef.current;
+      if (track) {
+        const rect = track.getBoundingClientRect();
+        const dist = track.offsetHeight - window.innerHeight;
+        target = clamp01(-rect.top / Math.max(1, dist));
+      }
+      smooth = smooth < 0 ? target : smooth + (target - smooth) * 0.16;
+      paint(smooth, now);
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
