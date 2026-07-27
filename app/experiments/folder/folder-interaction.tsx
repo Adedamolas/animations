@@ -24,6 +24,7 @@ const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 
+
 // Over-damped — no overshoot, no bounce.
 const SPRING = { stiffness: 150, damping: 30, mass: 1 };
 

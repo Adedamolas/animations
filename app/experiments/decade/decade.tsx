@@ -62,23 +62,27 @@ export function Decade({ initialActive = 3 }: { initialActive?: number }) {
     const A0 = prevRef.current;
     const A1 = activeRef.current;
 
-    const imgLeft = Math.min(vw * 0.22, 430);
-    const activeW = Math.min(vw * 0.44, 660);
+    // On narrow screens the copy stacks BELOW the active image instead of to
+    // its right, so we widen the image and reserve extra vertical room for it.
+    const narrow = vw < 720;
+    const imgLeft = narrow ? vw * 0.28 : Math.min(vw * 0.22, 430);
+    const activeW = narrow ? vw * 0.66 : Math.min(vw * 0.44, 660);
     const activeH = activeW * 0.56;
     const smallW = Math.min(vw * 0.12, 150);
     const smallH = smallW * 0.46;
     const GAP = 22;
-    const tickX = imgLeft - 30;
-    const labelW = tickX - 16;
+    const tickX = imgLeft - (narrow ? 26 : 30);
+    const labelW = tickX - (narrow ? 10 : 16);
+    const EXTRA = narrow ? 300 : 0; // room below the active image for the copy
 
     const geo = (A: number) => {
       const tops: number[] = [];
       let y = 0;
       for (let i = 0; i < N; i++) {
         tops[i] = y;
-        y += (i === A ? activeH : smallH) + GAP;
+        y += (i === A ? activeH + EXTRA : smallH) + GAP;
       }
-      const bandY = mix(vh * 0.15, vh * 0.6, N > 1 ? A / (N - 1) : 0);
+      const bandY = mix(vh * (narrow ? 0.17 : 0.15), vh * (narrow ? 0.34 : 0.6), N > 1 ? A / (N - 1) : 0);
       const offset = bandY - (tops[A] + activeH / 2);
       return { top: tops.map((v) => v + offset), activeTop: tops[A] + offset };
     };
@@ -112,9 +116,16 @@ export function Decade({ initialActive = 3 }: { initialActive?: number }) {
     }
 
     if (rightRef.current) {
-      rightRef.current.style.left = `${imgLeft + activeW + Math.min(vw * 0.05, 70)}px`;
-      rightRef.current.style.width = `${Math.max(220, vw - (imgLeft + activeW + Math.min(vw * 0.05, 70)) - Math.min(vw * 0.05, 64))}px`;
-      rightRef.current.style.transform = `translateY(${mix(gA.activeTop, gB.activeTop, t)}px)`;
+      if (narrow) {
+        // stacked below the active image
+        rightRef.current.style.left = `${imgLeft}px`;
+        rightRef.current.style.width = `${Math.min(activeW, vw - imgLeft - 16)}px`;
+        rightRef.current.style.transform = `translateY(${mix(gA.activeTop, gB.activeTop, t) + activeH + 18}px)`;
+      } else {
+        rightRef.current.style.left = `${imgLeft + activeW + Math.min(vw * 0.05, 70)}px`;
+        rightRef.current.style.width = `${Math.max(220, vw - (imgLeft + activeW + Math.min(vw * 0.05, 70)) - Math.min(vw * 0.05, 64))}px`;
+        rightRef.current.style.transform = `translateY(${mix(gA.activeTop, gB.activeTop, t)}px)`;
+      }
     }
     if (axisRef.current) axisRef.current.style.left = `${tickX}px`;
   }, [spring]);
@@ -169,7 +180,7 @@ export function Decade({ initialActive = 3 }: { initialActive?: number }) {
       <div className="absolute left-6 top-6 z-40 rounded-sm bg-foreground px-2 py-1 text-[11px] font-medium text-background sm:left-8">
         A Decade in the Making
       </div>
-      <div className="absolute left-6 top-1/2 z-40 -translate-y-1/2 text-[13px] font-medium text-text-secondary sm:left-8">
+      <div className="absolute left-6 top-1/2 z-40 hidden -translate-y-1/2 text-[13px] font-medium text-text-secondary min-[720px]:block sm:left-8">
         Growth
       </div>
 
@@ -223,7 +234,7 @@ export function Decade({ initialActive = 3 }: { initialActive?: number }) {
       {/* right panel — title + paragraph, remounted per active so it re-staggers */}
       <div ref={rightRef} className="absolute top-0 z-30" style={{ left: 1120, width: 560 }}>
         <div key={active}>
-          <h2 className="text-[clamp(2rem,3.4vw,3.4rem)] font-semibold leading-[1.04] tracking-tight">
+          <h2 className="text-[clamp(1.65rem,3.4vw,3.4rem)] font-semibold leading-[1.04] tracking-tight">
             {cur.title.map((line, i) => (
               <span key={i} className="block" style={{ animation: "caption-in 0.6s var(--ease-out) both", animationDelay: `${i * 0.08}s` }}>
                 {line}

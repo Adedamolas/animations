@@ -81,10 +81,12 @@ export function SlidingCarousel({ previewPos }: { previewPos?: number }) {
     const { w: cw, h: ch } = size.current;
     const p = pos.current;
 
-    // path anchors (card centres)
-    const P0x = vw * 0.84, P0y = -vh * 0.14;
-    const P1x = vw * 0.82, P1y = vh * 0.46;
-    const P2x = vw * 0.16, P2y = vh * 1.12;
+    // path anchors (card centres). On narrow screens the diagonal pulls toward
+    // centre so the focal card stays fully on-screen instead of off the right.
+    const narrow = vw < 680;
+    const P0x = vw * (narrow ? 0.6 : 0.84), P0y = -vh * 0.14;
+    const P1x = vw * (narrow ? 0.5 : 0.82), P1y = vh * 0.46;
+    const P2x = vw * (narrow ? 0.4 : 0.16), P2y = vh * 1.12;
 
     let best = Infinity;
     let bestScene = 0;

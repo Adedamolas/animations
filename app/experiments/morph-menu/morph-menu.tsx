@@ -60,6 +60,9 @@ export function MorphMenu({ initialView = "collapsed" }: { initialView?: View })
     if (box) {
       box.style.width = `${mix(SIZE[a].w, SIZE[b].w, tr)}px`;
       box.style.height = `${mix(SIZE[a].h, SIZE[b].h, tr)}px`;
+      // scale to fit on very narrow phones (widest form is 372px)
+      const fit = Math.min(1, (window.innerWidth - 24) / 372);
+      box.style.transform = fit < 1 ? `scale(${fit})` : "";
     }
     if (bodyPrevRef.current) bodyPrevRef.current.style.opacity = String(1 - seg(t, 0, 0.42));
     if (bodyCurRef.current) bodyCurRef.current.style.opacity = String(seg(t, 0.42, 1));
