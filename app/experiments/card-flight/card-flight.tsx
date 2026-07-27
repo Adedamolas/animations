@@ -10,16 +10,19 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 const CARD_W = 264;
 const CARD_H = 360;
 
-// Growth + vertical path keypoints.
-const GROW_END = 0.8; // scale reaches full here
-const DESCEND_END = 0.4; // top → bottom
-const ASCEND_END = 0.8; // bottom → centre
-const UNSTACK = [0.8, 0.98] as const; // cascade → spread row
-const FLIP = [0.84, 1] as const; // reveal the backs
+const UNSTACK = [0.82, 0.99] as const; // cascade → spread row
+const FLIP = [0.86, 1] as const; // reveal the backs
+const BOTTOM_MARGIN = 22; // keep the card's bottom edge just inside the screen
+
+// Idle "alive" drift — a constant, subtle float so nothing sits dead still.
+const IDLE_X = 6;
+const IDLE_Y = 9;
+const IDLE_R = 1.5;
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const seg = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
+const easeIn = (t: number) => t * t * t;
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 const easeInOut = (t: number) =>
   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -27,40 +30,55 @@ const easeInOut = (t: number) =>
 type CardDef = {
   theme: string;
   bg: string; // cyanotype blue
-  off: { x: number; y: number; z: number }; // cascade offset (at full scale)
+  off: { x: number; y: number; z: number }; // resting cascade offset (full scale)
   tilt: number; // left lean, degrees
   z: number; // paint order
   shape: "leaf" | "star" | "orb";
+  // Per-card flight timeline (in scroll-progress) → they move at different
+  // speeds and touch the bottom SEQUENTIALLY.
+  enter: number; // drops in from above
+  tb: number; // touches the bottom
+  tc: number; // arrives at centre
   tags: string[];
 };
 
-// Front-to-back: the lily-of-the-valley card sits front/bottom-left.
+// Front-to-back: the lily-of-the-valley card sits front/bottom-left. Offsets
+// are ~40% roomier than a tight stack, so the cards breathe apart.
 const CARDS: CardDef[] = [
   {
     theme: "Design",
     bg: "radial-gradient(120% 100% at 30% 20%, #17427f, #0b2a5a 55%, #071d40)",
-    off: { x: -78, y: 86, z: 60 },
+    off: { x: -109, y: 120, z: 60 },
     tilt: -13,
     z: 30,
     shape: "leaf",
+    enter: 0.0,
+    tb: 0.3,
+    tc: 0.6,
     tags: ["ui", "ux", "prototype", "human", "flow", "systems", "interaction", "wireframe", "tokens", "a11y", "research"],
   },
   {
     theme: "Photography",
     bg: "radial-gradient(120% 100% at 60% 25%, #1a4a86, #103a6f 55%, #0a2a55)",
-    off: { x: 4, y: 0, z: 0 },
+    off: { x: 6, y: 0, z: 0 },
     tilt: -6,
     z: 20,
     shape: "star",
+    enter: 0.05,
+    tb: 0.42,
+    tc: 0.7,
     tags: ["light", "frame", "moment", "composition", "texture", "contrast", "exposure", "aperture", "raw", "grading", "lens"],
   },
   {
     theme: "Development",
     bg: "radial-gradient(120% 100% at 45% 30%, #123f78, #0a2c58 55%, #06203f)",
-    off: { x: 84, y: -84, z: -60 },
+    off: { x: 118, y: -118, z: -60 },
     tilt: -1,
     z: 10,
     shape: "orb",
+    enter: 0.1,
+    tb: 0.54,
+    tc: 0.8,
     tags: ["html", "css", "javascript", "frontend", "microinteractions", "motion", "gsap", "webgl", "performance", "canvas", "shader"],
   },
 ];
@@ -145,67 +163,81 @@ export function CardFlight({ previewP }: { previewP?: number }) {
     [],
   );
 
-  const paint = useCallback(
-    (p: number) => {
-      const vh = typeof window !== "undefined" ? window.innerHeight : 800;
-      const s = mix(0.32, 1, easeOut(seg(p, 0, GROW_END)));
+  const idleRef = useRef(true);
 
-      // Vertical path: above-top → bottom → centre → hold.
-      let gy: number;
-      if (p < DESCEND_END) gy = mix(-vh * 0.66, vh * 0.4, easeInOut(seg(p, 0, DESCEND_END)));
-      else if (p < ASCEND_END) gy = mix(vh * 0.4, 0, easeInOut(seg(p, DESCEND_END, ASCEND_END)));
-      else gy = 0;
+  const paint = useCallback((p: number, time: number) => {
+    const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
+    const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+    const u = easeOut(seg(p, UNSTACK[0], UNSTACK[1]));
+    const f = easeInOut(seg(p, FLIP[0], FLIP[1]));
+    const spread = Math.min(320, vw * 0.3);
+    const idle = idleRef.current;
+    const t = time / 1000;
 
-      const u = easeOut(seg(p, UNSTACK[0], UNSTACK[1]));
-      const f = easeInOut(seg(p, FLIP[0], FLIP[1]));
-      const spread = Math.min(300, (typeof window !== "undefined" ? window.innerWidth : 1200) * 0.3);
+    for (let i = 0; i < CARDS.length; i++) {
+      const el = cardRefs.current[i];
+      if (!el) continue;
+      const c = CARDS[i];
 
-      for (let i = 0; i < CARDS.length; i++) {
-        const el = cardRefs.current[i];
-        if (!el) continue;
-        const c = CARDS[i];
-        const stackX = c.off.x * s;
-        const stackY = gy + c.off.y * s;
-        const stackZ = c.off.z * s;
-        const rowX = (i - 1) * spread;
-        const x = mix(stackX, rowX, u);
-        const y = mix(stackY, 0, u);
-        const z = mix(stackZ, 0, u);
-        const tilt = mix(c.tilt, 0, u);
-        el.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotateZ(${tilt}deg) rotateY(${f * 180}deg) scale(${s})`;
-        el.style.zIndex = String(f > 0.5 ? 100 - c.z : c.z);
+      // Each card grows across its OWN flight → different apparent speeds.
+      const s = mix(0.34, 1, easeOut(clamp01((p - c.enter) / (c.tc - c.enter))));
+      const bottomY = vh / 2 - (CARD_H * s) / 2 - BOTTOM_MARGIN;
+      const topY = -vh * 0.62 - (CARD_H * s) / 2;
+
+      // Vertical: fall in (accelerate), touch the bottom, rise to centre.
+      let baseY: number;
+      if (p <= c.enter) baseY = topY;
+      else if (p < c.tb) baseY = mix(topY, bottomY, easeIn(seg(p, c.enter, c.tb)));
+      else if (p < c.tc) baseY = mix(bottomY, 0, easeOut(seg(p, c.tb, c.tc)));
+      else baseY = 0;
+
+      const stackX = c.off.x * s;
+      const stackY = baseY + c.off.y * s;
+      const stackZ = c.off.z * s;
+      const rowX = (i - 1) * spread;
+
+      let x = mix(stackX, rowX, u);
+      let y = mix(stackY, 0, u);
+      const z = mix(stackZ, 0, u);
+      let tilt = mix(c.tilt, 0, u);
+
+      // Idle drift — each card on its own phase + frequency so they feel alive
+      // and never perfectly in sync. Scaled by size so it's subtle when far.
+      if (idle) {
+        const fr = 1 + i * 0.13;
+        x += Math.sin(t * 0.9 * fr + i * 2.1) * IDLE_X * s;
+        y += Math.sin(t * 0.7 * fr + i * 1.3) * IDLE_Y * s;
+        tilt += Math.sin(t * 0.6 * fr + i * 2.7) * IDLE_R;
       }
 
-      if (hintRef.current) hintRef.current.style.opacity = String(clamp01(1 - p * 6));
-    },
-    [],
-  );
+      el.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotateZ(${tilt}deg) rotateY(${f * 180}deg) scale(${s})`;
+      el.style.zIndex = String(f > 0.5 ? 100 - c.z : c.z);
+    }
+
+    if (hintRef.current) hintRef.current.style.opacity = String(clamp01(1 - p * 6));
+  }, []);
 
   useEffect(() => {
-    // Preview mode: paint a fixed progress and skip the scroll wiring.
-    if (previewP !== undefined) {
-      paint(previewP);
-      return;
-    }
+    idleRef.current =
+      typeof window === "undefined" ||
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
     let raf = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
+    const loop = (now: number) => {
+      let p = previewP ?? 0;
+      if (previewP === undefined) {
         const track = trackRef.current;
-        if (!track) return;
-        const rect = track.getBoundingClientRect();
-        const dist = track.offsetHeight - window.innerHeight;
-        paint(clamp01(-rect.top / Math.max(1, dist)));
-      });
+        if (track) {
+          const rect = track.getBoundingClientRect();
+          const dist = track.offsetHeight - window.innerHeight;
+          p = clamp01(-rect.top / Math.max(1, dist));
+        }
+      }
+      paint(p, now);
+      raf = requestAnimationFrame(loop);
     };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
   }, [paint, previewP]);
 
   return (
