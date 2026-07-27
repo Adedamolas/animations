@@ -76,6 +76,20 @@ export const experiments: Experiment[] = [
       "Big tilted rectangles ride up from the corner and grow to full size at centre on momentum scroll, fluttering like waved paper that wobbles to a soft settle when it stops.",
     date: "2026-07-27",
   },
+  {
+    slug: "morph-menu",
+    title: "Morph menu",
+    blurb:
+      "One container that springs between a collapsed pill, a menu, a tall inquiry form, a newsletter, and an about panel — the box overshooting as the content crossfades.",
+    date: "2026-07-27",
+  },
+  {
+    slug: "folder",
+    title: "Folder",
+    blurb:
+      "A folder whose front sheet tips open while the files inside fan out and name themselves, staggered — with a springy back-out pop.",
+    date: "2026-07-27",
+  },
 ];
 
 export function getExperiment(slug: string): Experiment | undefined {
