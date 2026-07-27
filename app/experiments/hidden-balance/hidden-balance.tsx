@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSpring } from "@/lib/use-spring";
 
-const VALUE = "$5,000.20";
+const DEFAULT_VALUE = "$5,000.20";
 const NUM_CLASS =
   "text-[46px] font-semibold tracking-tight tabular-nums leading-none text-foreground";
 
@@ -46,6 +46,12 @@ export function HiddenBalance({ initialHidden = false }: { initialHidden?: boole
   const [hidden, setHidden] = useState(initialHidden);
   const hiddenRef = useRef(initialHidden);
   hiddenRef.current = hidden;
+
+  // The balance is editable — any value still shatters, because the shard grid
+  // is measured off whatever number is currently rendered.
+  const [value, setValue] = useState(DEFAULT_VALUE);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(DEFAULT_VALUE);
 
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
   const realRef = useRef<HTMLDivElement>(null);
@@ -135,6 +141,16 @@ export function HiddenBalance({ initialHidden = false }: { initialHidden?: boole
     if (r) setBox({ w: r.width, h: r.height });
   }, []);
 
+  const startEdit = useCallback(() => {
+    setDraft(value);
+    setEditing(true);
+  }, [value]);
+
+  const commit = useCallback(() => {
+    setValue((prev) => (draft.trim() ? draft : prev));
+    setEditing(false);
+  }, [draft]);
+
   const toggle = useCallback(() => {
     const next = !hiddenRef.current;
     setHidden(next);
@@ -160,6 +176,11 @@ export function HiddenBalance({ initialHidden = false }: { initialHidden?: boole
     return () => window.removeEventListener("resize", measure);
   }, [measure]);
 
+  // Re-measure whenever the committed value changes so the shard grid re-fits.
+  useEffect(() => {
+    measure();
+  }, [value, measure]);
+
   const tw = box ? box.w / COLS : 0;
   const th = box ? box.h / ROWS : 0;
 
@@ -180,12 +201,29 @@ export function HiddenBalance({ initialHidden = false }: { initialHidden?: boole
 
       {/* Balance */}
       <div className="mt-6 text-[13px] text-text-secondary">Total balance</div>
-      <div className="mt-1.5 flex items-center gap-3">
+      <div className="mt-1.5 flex items-center gap-2">
         <div className="relative inline-block select-none" aria-hidden>
-          {/* Real number — defines the box, shown at rest */}
+          {/* Real number — defines the box, shown at rest. Sizes to the draft
+              while editing so the box (and shards) fit whatever you type. */}
           <div ref={realRef} className={NUM_CLASS}>
-            {VALUE}
+            {editing ? draft || " " : value}
           </div>
+
+          {/* Inline editor — an opaque field laid right over the number */}
+          {editing && (
+            <input
+              autoFocus
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onBlur={commit}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") e.currentTarget.blur();
+                if (e.key === "Escape") setEditing(false);
+              }}
+              aria-label="Balance"
+              className={`${NUM_CLASS} absolute inset-0 w-full bg-card outline-none`}
+            />
+          )}
 
           {/* Shard layer — copies of the number sliced into a grid */}
           <div
@@ -206,7 +244,7 @@ export function HiddenBalance({ initialHidden = false }: { initialHidden?: boole
                   className={`absolute ${NUM_CLASS}`}
                   style={{ left: -s.x, top: -s.y, width: box?.w, height: box?.h }}
                 >
-                  {VALUE}
+                  {value}
                 </div>
               </div>
             ))}
@@ -227,9 +265,21 @@ export function HiddenBalance({ initialHidden = false }: { initialHidden?: boole
           </div>
         </div>
 
-        {/* Screen-reader truth + accessible toggle */}
+        {/* Edit the balance */}
+        {!hidden && !editing && (
+          <button
+            type="button"
+            onClick={startEdit}
+            aria-label="Edit balance"
+            className="grid size-7 shrink-0 place-items-center rounded-md text-text-tertiary transition-[color,transform] duration-[var(--dur-press)] ease-out hover:text-text-secondary active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+          >
+            <Pencil />
+          </button>
+        )}
+
+        {/* Screen-reader truth */}
         <span className="sr-only">
-          {hidden ? "Balance hidden" : `Balance ${VALUE}`}
+          {hidden ? "Balance hidden" : `Balance ${value}`}
         </span>
       </div>
 
@@ -258,6 +308,15 @@ export function HiddenBalance({ initialHidden = false }: { initialHidden?: boole
         </button>
       </div>
     </div>
+  );
+}
+
+function Pencil() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
   );
 }
 
