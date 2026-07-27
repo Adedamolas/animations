@@ -55,6 +55,20 @@ export const experiments: Experiment[] = [
       "Three tilted cyanotype cards drop in from above and grow as you scroll — sinking, rising to centre, then un-stacking and flipping to their backs.",
     date: "2026-07-27",
   },
+  {
+    slug: "sliding-carousel",
+    title: "Sliding carousel",
+    blurb:
+      "Photos ride a diagonal from top-right to bottom-left on momentum scroll, a sliding window opening and closing over each as it passes the focal point.",
+    date: "2026-07-27",
+  },
+  {
+    slug: "decade",
+    title: "A decade in the making",
+    blurb:
+      "An arrow-key timeline where the active year expands into a big frame, pushing the years below down, while the title and sentence-staggered copy track its position.",
+    date: "2026-07-27",
+  },
 ];
 
 export function getExperiment(slug: string): Experiment | undefined {
