@@ -27,6 +27,7 @@ export const experiments: Experiment[] = [
     date: "2026-07-24",
   },
   {
+    
     slug: "hero-morph",
     title: "Hero morph",
     blurb:
@@ -46,6 +47,13 @@ export const experiments: Experiment[] = [
     blurb:
       "Hide your balance and a shimmer sweeps across, shattering the number into shards that scatter — then reassembles them when you reveal it again.",
     date: "2026-07-26",
+  },
+  {
+    slug: "card-flight",
+    title: "Card flight",
+    blurb:
+      "Three tilted cyanotype cards drop in from above and grow as you scroll — sinking, rising to centre, then un-stacking and flipping to their backs.",
+    date: "2026-07-27",
   },
 ];
 
