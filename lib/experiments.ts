@@ -69,6 +69,13 @@ export const experiments: Experiment[] = [
       "An arrow-key timeline where the active year expands into a big frame, pushing the years below down, while the title and sentence-staggered copy track its position.",
     date: "2026-07-27",
   },
+  {
+    slug: "paper-cards",
+    title: "Paper cards",
+    blurb:
+      "Big tilted rectangles ride up from the corner and grow to full size at centre on momentum scroll, fluttering like waved paper that wobbles to a soft settle when it stops.",
+    date: "2026-07-27",
+  },
 ];
 
 export function getExperiment(slug: string): Experiment | undefined {
