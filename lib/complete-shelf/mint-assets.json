@@ -1,0 +1,7 @@
+{
+  "registryVersion": 1,
+  "assetRoot": "public",
+  "delivery": "procedural",
+  "note": "Import seam mirroring Mint's asset registry. Covers are generated procedurally in cover-art.ts (delivery: procedural). If Mint MCP later generates GLB hardcovers, add per-book entries here keyed by book id, e.g. \"vol-01\": { \"glb\": \"/complete-shelf/vol-01.glb\" }, and the engine loads the GLB instead of building a texture book. The browser only imports this JSON — it never calls the Mint MCP.",
+  "assets": {}
+}

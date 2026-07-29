@@ -110,6 +110,7 @@
   --radius-xl: 18px;
 
   --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), Georgia, "Times New Roman", serif;
 }
 
 /* ── Lenis smooth scroll (global foundation) ─────────────────────────────── */

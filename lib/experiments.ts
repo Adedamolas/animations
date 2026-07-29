@@ -97,6 +97,20 @@ export const experiments: Experiment[] = [
       "An infinite scroll-driven portfolio row rendered in WebGL through a liquid-glass lens shader — chromatic dispersion, a shimmer ring, and a click-to-focus mode. Adapted from Yousuf Soomro's MIT project.",
     date: "2026-07-27",
   },
+  {
+    slug: "liquid-dock",
+    title: "Liquid dock",
+    blurb:
+      "A floating glass dock pinned to the bottom of a scrolling page, refracting whatever passes behind it through the same WebGL lens — the nav's active pill springing between items with a liquid stretch.",
+    date: "2026-07-28",
+  },
+  {
+    slug: "complete-shelf",
+    title: "The Complete Shelf",
+    blurb:
+      "A warm editorial 3D library of nineteen procedural clothbound hardcovers on a continuous walnut shelf — browse by drag, wheel, arrows or markers, then pull any volume forward to orbit, pan, and zoom.",
+    date: "2026-07-28",
+  },
 ];
 
 export function getExperiment(slug: string): Experiment | undefined {
