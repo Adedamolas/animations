@@ -13,17 +13,25 @@ type Engine = ReturnType<typeof createManuals>;
 
 export function Manuals() {
   const mountRef = useRef<HTMLDivElement>(null);
+  const labelRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Engine | null>(null);
-  const [hover, setHover] = useState<{ i: number; x: number; y: number }>({ i: -1, x: 0, y: 0 });
+  const [hoverIdx, setHoverIdx] = useState(-1);
   const [openIdx, setOpenIdx] = useState<number | null>(null);
 
-  const onHover = useCallback((i: number, x: number, y: number) => setHover({ i, x, y }), []);
+  // Only the index goes through state — it changes on hover, not per frame.
+  const onHover = useCallback((i: number) => setHoverIdx(i), []);
+  // The position does not: writing it straight to the node keeps a 60fps
+  // transform from re-rendering the tree.
+  const onTrack = useCallback((x: number, y: number) => {
+    const el = labelRef.current;
+    if (el) el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+  }, []);
   const onOpen = useCallback((i: number) => setOpenIdx(i), []);
   const onClose = useCallback(() => setOpenIdx(null), []);
 
   useEffect(() => {
     if (!mountRef.current) return;
-    const engine = createManuals(mountRef.current, { onHover, onOpen, onClose });
+    const engine = createManuals(mountRef.current, { onHover, onTrack, onOpen, onClose });
     engineRef.current = engine;
 
     // ?open=2 lands straight in the detail view, for previews
@@ -37,10 +45,11 @@ export function Manuals() {
       engine.destroy();
       engineRef.current = null;
     };
-  }, [onHover, onOpen, onClose]);
+  }, [onHover, onTrack, onOpen, onClose]);
 
   const open = openIdx !== null ? MANUALS[openIdx] : null;
   const showing = openIdx !== null;
+  const labelOn = hoverIdx >= 0 && !showing;
 
   return (
     <div
@@ -54,9 +63,15 @@ export function Manuals() {
         style={{
           color: LOOK.wordmark,
           fontSize: "clamp(84px, 20vw, 320px)",
-          opacity: showing ? 0.16 : 1,
-          transform: showing ? "translate3d(0,-3vh,0)" : "none",
-          transition: "opacity 620ms var(--ease-out), transform 620ms var(--ease-out)",
+          // Rack focus: the wordmark goes soft as the book comes forward, so
+          // the change reads as a lens pulling focus rather than a light being
+          // turned down. Dimming alone never says "behind" — defocus does.
+          // It can carry more opacity than before precisely because it is soft.
+          opacity: showing ? 0.22 : 1,
+          filter: showing ? "blur(9px)" : "blur(0px)",
+          transform: showing ? "translate3d(0,-3vh,0) scale(1.03)" : "none",
+          transition:
+            "opacity 620ms var(--ease-out), filter 620ms var(--ease-out), transform 620ms var(--ease-out)",
         }}
       >
         Manuals
@@ -65,20 +80,23 @@ export function Manuals() {
       {/* WebGL fan */}
       <div ref={mountRef} className="absolute inset-0" />
 
-      {/* what you are pointing at */}
-      <div
-        className="pointer-events-none absolute z-20 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-medium tracking-[0.06em] backdrop-blur-sm"
-        style={{
-          left: hover.x,
-          top: hover.y,
-          background: "rgba(255,255,255,0.1)",
-          border: "1px solid rgba(255,255,255,0.14)",
-          opacity: hover.i >= 0 && !showing ? 1 : 0,
-          transform: `translate3d(-50%, ${hover.i >= 0 && !showing ? "0" : "6px"}, 0)`,
-          transition: "opacity 180ms var(--ease-out), transform 180ms var(--ease-out)",
-        }}
-      >
-        {hover.i >= 0 ? MANUALS[hover.i].title : ""}
+      {/* What you are pointing at. Two nested elements on purpose: the outer
+          one is positioned by the engine every frame (so the label rides the
+          book as it lifts, tilts and parallaxes, and springs across when you
+          move to another), the inner one owns the show/hide transition. One
+          element can't do both — they would be fighting over `transform`. */}
+      <div ref={labelRef} className="pointer-events-none absolute left-0 top-0 z-20 will-change-transform">
+        <div
+          className="-translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-medium tracking-[0.06em] backdrop-blur-sm"
+          style={{
+            background: "rgba(255,255,255,0.1)",
+            border: "1px solid rgba(255,255,255,0.14)",
+            opacity: labelOn ? 1 : 0,
+            transition: "opacity 180ms var(--ease-out)",
+          }}
+        >
+          {hoverIdx >= 0 ? MANUALS[hoverIdx].title : ""}
+        </div>
       </div>
 
       {/* the sheet, once a book has left the fan */}
@@ -127,7 +145,8 @@ export function Manuals() {
         className="pointer-events-none absolute inset-x-0 bottom-6 z-10 text-center font-mono text-[11px] tracking-[0.2em] text-white/35"
         style={{
           opacity: showing ? 0 : 1,
-          transition: "opacity 240ms var(--ease-out)",
+          filter: showing ? "blur(4px)" : "blur(0px)",
+          transition: "opacity 240ms var(--ease-out), filter 320ms var(--ease-out)",
         }}
       >
         HOVER TO PEEL &nbsp;·&nbsp; DRAG TO OPEN &nbsp;·&nbsp; CLICK FOR THE BOOK
