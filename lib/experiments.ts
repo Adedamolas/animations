@@ -111,6 +111,13 @@ export const experiments: Experiment[] = [
       "A warm editorial 3D library of nineteen procedural clothbound hardcovers on a continuous walnut shelf — browse by drag, wheel, arrows or markers, then pull any volume forward to orbit, pan, and zoom.",
     date: "2026-07-28",
   },
+  {
+    slug: "vanishing-point",
+    title: "Vanishing point",
+    blurb:
+      "A row of studio plates that marches left and shrinks toward a point off the bottom-left as you scroll — one continuous perspective, the near plate cropped by the edge, the far ones dissolving into haze.",
+    date: "2026-07-28",
+  },
 ];
 
 export function getExperiment(slug: string): Experiment | undefined {
