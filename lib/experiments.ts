@@ -118,6 +118,13 @@ export const experiments: Experiment[] = [
       "A row of studio plates that marches left and shrinks toward a point off the bottom-left as you scroll — one continuous perspective, the near plate cropped by the edge, the far ones dissolving into haze.",
     date: "2026-07-28",
   },
+  {
+    slug: "manuals",
+    title: "Manuals",
+    blurb:
+      "Three hardcovers held in a fan — hover and the board slips open by however far along it you point, drag to peel it, click and the book leaves for a detail slot while the other two are sent out of frame on an authored curve.",
+    date: "2026-07-29",
+  },
 ];
 
 export function getExperiment(slug: string): Experiment | undefined {
