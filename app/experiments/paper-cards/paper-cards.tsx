@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { clamp, clamp01 } from "@/lib/math";
 
 /* ── Paper cards ─────────────────────────────────────────────────────────────
    Big rectangles facing the viewer, tilted ~15° left. On momentum scroll they
@@ -42,8 +43,6 @@ const WAVE_AMP = 1.0; // per-card degrees multiplier
 const GRAIN =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
 
-const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
-const clamp01 = (v: number) => clamp(v, 0, 1);
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 const smooth = (a: number, b: number, x: number) => {
   const t = clamp01((x - a) / (b - a));

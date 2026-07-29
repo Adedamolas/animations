@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSpring } from "@/lib/use-spring";
+import { clamp01 } from "@/lib/math";
 
 /* Warm, editorial palette (marketing surface — off the chrome tokens). */
 const CREAM = "#faf6e8";
@@ -71,9 +72,6 @@ const WORD_START: number[] = (() => {
 })();
 
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
-const clamp = (v: number, min: number, max: number) =>
-  Math.min(max, Math.max(min, v));
-const clamp01 = (v: number) => clamp(v, 0, 1);
 const seg = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
 const rgb = (a: number[], b: number[], t: number) =>
   `rgb(${Math.round(mix(a[0], b[0], t))}, ${Math.round(mix(a[1], b[1], t))}, ${Math.round(mix(a[2], b[2], t))})`;

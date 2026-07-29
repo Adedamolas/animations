@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSpring } from "@/lib/use-spring";
+import { clamp, clamp01 } from "@/lib/math";
 
 /* ── A Decade in the Making ──────────────────────────────────────────────────
    A vertical timeline of years. Arrow keys (or a click) move the active year;
@@ -30,8 +31,6 @@ const ENTRIES: Entry[] = [
 ];
 const N = ENTRIES.length;
 
-const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
-const clamp01 = (v: number) => clamp(v, 0, 1);
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 
 const GRAIN =

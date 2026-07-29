@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { clamp01 } from "@/lib/math";
 
 /* ── The choreography, in scroll-progress space (p: 0 → 1) ──────────────────
    A tall track pins a 3D stage. As you scroll, three tilted cyanotype cards
@@ -19,7 +20,6 @@ const IDLE_X = 6;
 const IDLE_Y = 9;
 const IDLE_R = 1.5;
 
-const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const seg = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);

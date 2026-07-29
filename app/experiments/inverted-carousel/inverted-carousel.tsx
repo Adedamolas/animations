@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSpring } from "@/lib/use-spring";
 import { people } from "./data";
+import { clamp } from "@/lib/math";
 
 /* ── Geometry of the concave ring ──────────────────────────────────────────
    Cards sit on an actual circle of radius RADIUS, each one STEP_DEG further
@@ -16,8 +17,6 @@ const STEP_DEG = 36; // deg between adjacent cards → ~282px between neighbours
 // face would paint its mirrored backside. 2.45 → dies at 88.2°, a sliver.
 const VISIBLE = 2.45;
 
-const clamp = (v: number, min: number, max: number) =>
-  Math.min(max, Math.max(min, v));
 
 const N = people.length;
 // The ring loops seamlessly as long as cards vanish before they wrap to the

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSpring } from "@/lib/use-spring";
+import { clamp01 } from "@/lib/math";
 
 /* ── Folder jump-out ─────────────────────────────────────────────────────────
    Three square cards, each tilted its own way, sit sandwiched in the folder
@@ -20,7 +21,6 @@ const CARDS: Card[] = [
 const N = CARDS.length;
 const STAGGER = 0.06; // cascade between cards
 
-const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSpring } from "@/lib/use-spring";
+import { clamp01 } from "@/lib/math";
 
 /* The product every testimonial is about — one constant label, top-left. */
 const BRAND = "Alta®";
@@ -82,7 +83,6 @@ const LINE_STAGGER = 0.07; // per-line delay (progress units)
 const LINE_DUR = 0.6; // each line's own travel
 
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
-const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const seg = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
 
 const initials = (name: string) =>

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSpring } from "@/lib/use-spring";
+import { clamp01 } from "@/lib/math";
 
 const DEFAULT_VALUE = "$5,000.20";
 const NUM_CLASS =
@@ -17,7 +18,6 @@ const SPRING = { stiffness: 120, damping: 22, mass: 1 };
 /* How far behind the shimmer front a shard fully breaks (fraction of width). */
 const TRAIL = 0.42;
 
-const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const seg = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
 
 // Deterministic per-shard randomness (stable across renders / SSR).

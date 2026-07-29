@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useSpring } from "@/lib/use-spring";
+import { clamp01 } from "@/lib/math";
 
 /* ── Morphing menu ───────────────────────────────────────────────────────────
    One container that morphs between very different forms — a collapsed pill, a
@@ -30,7 +31,6 @@ const HEADER_H = 46;
 // Underdamped → the box overshoots its target size and springs back, so the
 // morph has that liquid-signup bounce.
 const SPRING = { stiffness: 260, damping: 17, mass: 1 };
-const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 const seg = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
 
